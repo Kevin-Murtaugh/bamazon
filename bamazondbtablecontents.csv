@@ -1,0 +1,11 @@
+id,prodName,deptName,price,stkQty
+1,shovel,"home  ",10,10
+2,"sprinkler ","home  ",5,10
+3,"hose      ","home  ",8,10
+4,"mouse     ",office,15,10
+5,thumbdrive,office,18,10
+6,"earbuds   ",office,22,10
+7,"mats      ","auto  ",20,10
+8,"charger   ","auto  ",17,10
+9,"tire      ","auto  ",40,10
+10,"paper     ",office,9,10
