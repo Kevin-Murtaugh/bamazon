@@ -36,121 +36,64 @@ function buyChoice() {
      connection.query("SELECT * FROM products", function(err, res) {
         if (err) throw err;
 
-//     //   // once you have the items, prompt the user for which they'd like to bid on
      console.log("enter inquirer fn /prompt");
-
-    // // get user's choice of product
-    inquirer.prompt([
+     inquirer.prompt([
         {
-          name: "userProdName",
+          name: "product_name",
           type: "list",
           message: "Which product would you like to buy?",
           choices: function () {
-            var userChoiceArray = [];
-            res.forEach(product => userChoiceArray.push(product.prodName));
-            return userChoiceArray;
+            let choiceArray = [];
+            res.forEach(product => choiceArray.push(product.product_name));
+            return choiceArray;
           }
         }
       ])
-    .then(function(answer) {
+      .then(function(answer) {
         // store db row for chosen product in productChoice
-        res.forEach(function(productInStock) {
-            if (productInStock.prodName === answer.userProdName) {
-//                checkWhichQty =product.id;
-                console.log("prodinstk.userProdName ", productInStock.userProdName, "prodinstk.id ", productInStock.id);
-                globalProd = productInStock;
-                console.log(globalProd);
+        res.forEach(function(product) {
+          if (product.product_name === answer.product_name) {
+            productChoice = product;
           }
-        })
-    })
+        });
+
+
+        // get user's quantity desired
+        inquirer.prompt([
+          {
+            name: "quantity",
+            type: "input",
+            message: "How many would you like to buy?",
+            validate: function(input) {
+              // check against inventory available; if user asks for too much, prompt won't continue
+              return input <= productChoice.stock_quantity || "Sorry, we don't have that many in stock. Try again!";
+            }
+          }
+        ])
+        .then(function(answer) {
+          // deduct db inventory by answer.quantity (to num)
+          let saleAmount = parseInt(productChoice.price) * parseInt(answer.quantity);
+          let query = "UPDATE products SET stock_quantity=?, product_sales=? WHERE item_id= ?";
+          let values = [
+            productChoice.stock_quantity - answer.quantity,
+            productChoice.product_sales + saleAmount,
+            productChoice.item_id
+          ];
+          console.log("saleAmount:", saleAmount, "query", query, "values", values);
+          connection.query(query, values, function(err){
+              if (err) throw err;
+              console.log("OK, it's yours!");
+              console.log("Let's see, " + answer.quantity + " units at $" + productChoice.price + "...");
+              console.log("That'll be $" + saleAmount + " please.");
+              runSale();
+            }
+          );
+        });
+        //end of 2nd .then
+      });
     });
-}
+  }
 
-inquirer.prompt([
-    {
-      name: "userQty",
-      type: "input",
-      message: "How many would you like to buy?",
-      validate: function(input) {
-// check against inventory available; if user asks for too much, prompt won't continue
-        console.log("answer.userQty ", answer.userQty);
-        if (globalProd.stkQty >= userChoiceProd) {
-            console.log("sorry, we don;t have that many in stock");
-        }
-
-//        return input > userChoiceProd.stkQty || "Sorry, we don't have that many in stock. Try again!";
-      }
-    }
-  ])
-  .then(function(answer) {
-    // deduct db inventory by answer.quantity (to num)
-    var saleAmount = parseInt(userProdChoice.price) * parseInt(answer.userQty);
-    var query = "UPDATE products SET stock_quantity=?, WHERE item_id= ?";
-    var values = [
-      userProdChoice.stkQty - answer.userQty,
-      userProdChoice.item_id
-    ];
-console.log("saleAmount:", saleAmount, "query", query, "values", values);
-  });
-
-// inquirer mess starts here 
-//    var idChoice =0;
-//    var idQty = 0;
-
-// // inquirer.prompt ([
-//     {   name: "IDchoice",
-//         type: "input", 
-//         message: "Which item would you like to buy?",
-//     },   
-//     {   
-//         name: "orderQty",
-//         type: "input",
-//         message: "How many would you like to buy?"  
-//     }
-//     validate: function(answer) {
-
-//     }
-//     ])
-//     .then(function(answer) {
-//     // get the information of the chosen item
-//         if (res[idChoice].stkQty < orderQty) {
-//                 console.log("2nd if stmt under chos eItem  promise");
-//                 res[idChoice].stkQty -= orderQty * res[idchoice].price;
-//                 console.log("Your total cost = $", orderQty,".");
-//                 console.log("Thank you for your business!");
-//         } else {
-//             console.log("Sorry, we do not have enough stock to fill your order.")
-//         };
-//     });
-    
-
-    // var questions =[];
-    //     {
-    //         message: "Which item would you like to buy?",
-    //         type: "input",
-    //         name: "idChoice"
-    //     },
-    //     {
-    //         message: "How many would you like to buy?",
-    //         type: "input", 
-    //         name: "idQty"    
-    //     }];
-    // function itemReq(idChoice){
-    //     console.log("inside itemReq");
-    // //     }
-    //         inquirer.prompt ([
-    //         {
-    //             message: "Which item would you like to buy?",
-    //             type: "input",
-    //             name: "idChoice"
-    //         },
-    //         {
-    //             message: "How many would you like to buy?",
-    //             type: "input", 
-    //             name: "idQty"    
-    //         }]
-    //         .then(function(answer) {        
-    //             console.log("after .then",answer.idChoice, answer.idQty);
 
 //                 if (validate(answer.idChoice)=== false) {
 //           // determine if there are enough units
