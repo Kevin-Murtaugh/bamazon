@@ -5,7 +5,10 @@ var inquirer = require("inquirer");
 var validInput = false;
 var globalProd =[];
 var product= [];
-
+var productChoice = [];
+var stockQtyChoice = 99;
+var saleAmount= 0;
+var userChoicePrice = 0;
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -24,76 +27,124 @@ var connection = mysql.createConnection({
     if (err) throw err;
     console.log("Hello Customer, how are you?  You are logged in today as ID# " + connection.threadId + "\n");
     console.log("Here is what we have for sale today:")
- //   readProducts();
+    readProducts();
     console.log("call buyChoice()");
     buyChoice();
   });
 
 // ebay-like code from exercises
 function buyChoice() {
-    console.log("inside buy choice");
-    // query the database for all items being auctioned
-     connection.query("SELECT * FROM products", function(err, res) {
+    // fetch and display db data
+    connection.query("SELECT * FROM products ORDER BY id", function (err, res) {
         if (err) throw err;
 
-     console.log("enter inquirer fn /prompt");
-     inquirer.prompt([
+    inquirer.prompt([
         {
-          name: "product_name",
-          type: "list",
-          message: "Which product would you like to buy?",
-          choices: function () {
+        name: "product_name",
+        type: "list",
+        message: "Which product would you like to buy?",
+        choices: function () {
             let choiceArray = [];
-            res.forEach(product => choiceArray.push(product.product_name));
+            res.forEach(products => choiceArray.push(products.prodName));
             return choiceArray;
-          }
+            }
         }
-      ])
-      .then(function(answer) {
+    ])
+    .then(function(answer) {
         // store db row for chosen product in productChoice
-        res.forEach(function(product) {
-          if (product.product_name === answer.product_name) {
-            productChoice = product;
-          }
-        });
+//        console.log("answer.product_name ", answer.product_name);
+        for (var i = 0; i < res.length; i++) {
+//            console.log("res[i]", res[i]);
+            if (res[i].prodName === answer.product_name) {
+                idChoice = i+1;
+                userChoicePrice = res[i].price;
+                productChoice = res[i].prodName;
+                stockQtyChoice = res[i].stkQty;
+                console.log("inside 1st .then", i, idChoice, userChoicePrice, productChoice, stockQtyChoice);
+            }
+        }
+    });
 
-
-        // get user's quantity desired
+ //       get user's quantity desired
         inquirer.prompt([
           {
-            name: "quantity",
+            name: "userQty",
             type: "input",
-            message: "How many would you like to buy?",
-            validate: function(input) {
-              // check against inventory available; if user asks for too much, prompt won't continue
-              return input <= productChoice.stock_quantity || "Sorry, we don't have that many in stock. Try again!";
+            default: 1,
+            message: "How many would you like to buy?", // Up to ", stockQtyChoice, " available."
+            validate: function(userQty) {                
+                if (userQty <= stockQtyChoice) {
+                    console.log( "answer.userQty ", answer.userQty, "userQty", userQty, "stockQtyChoice ", stockQtyChoice); 
+                    stockChoiceQty -= userQty;
+                } else {
+                    return "Sorry, we do not have enough stock to satisfy your order.";
+                }
+          //  validate: function(input) {
+            //   // check against inventory available; if user asks for too much, prompt won't continue
+//            return input <= productChoice.stkQty || "Sorry, we don't have that many in stock. Try again!";
             }
-          }
+        }
         ])
         .then(function(answer) {
+            console.log("in 2nd .then", idChoice, userChoicePrice, productChoice, stockQtyChoice);
           // deduct db inventory by answer.quantity (to num)
-          let saleAmount = parseInt(productChoice.price) * parseInt(answer.quantity);
-          let query = "UPDATE products SET stock_quantity=?, product_sales=? WHERE item_id= ?";
-          let values = [
-            productChoice.stock_quantity - answer.quantity,
-            productChoice.product_sales + saleAmount,
-            productChoice.item_id
-          ];
-          console.log("saleAmount:", saleAmount, "query", query, "values", values);
-          connection.query(query, values, function(err){
-              if (err) throw err;
-              console.log("OK, it's yours!");
-              console.log("Let's see, " + answer.quantity + " units at $" + productChoice.price + "...");
-              console.log("That'll be $" + saleAmount + " please.");
-              runSale();
+          
+//           stockQtyChoice -= answer.userQty;
+            var saleAmount = userChoicePrice * answer.userQty;
+//           var query = "UPDATE products SET stkQty= ?, WHERE id= ?";
+//           var values = [
+//             stockQtyChoice,
+//  //           productChoice.product_sales + saleAmount,
+//             idChoice
+//           ];
+//           console.log("saleAmount:", saleAmount, "query", query, "values", values);
+//           connection.query(query, values, function(err){
+            connection.query(
+                "UPDATE products SET ? WHERE ?",
+            [
+              {
+                stkQty: (stockQtyChoice - answer.userQty)
+              },
+              {
+                id: idChoice
+              }
+            ],
+            function(error) {
+              if (error) throw err;
+              console.log("Bid placed successfully!");
+//              start();
             }
           );
-        });
-        //end of 2nd .then
-      });
+              if (err) throw err;
+              console.log("OK, it's yours!");
+              console.log("Let's see, " + answer.userQty + " units at $" + userChoicePrice + "...");
+              console.log("That'll be $" + saleAmount + " please.");
+              buyChoice();
+            }
+          );
+ //       });
     });
   }
 
+  function readProducts() {
+    console.log("read products");
+   connection.query("SELECT * FROM products", function(err, res) {
+      if (err) {
+          console.log("err", err);
+  
+      // Log all results of the SELECT statement
+      } else {
+          for (var i=0; i < res.length; i++){
+            console.log("-----------------------------------------------");
+            console.log(" | ", res[i].id," | ", res[i].prodName," | ", res[i].deptName, " | ", res[i].price, " | ",  res[i].stkQty, " | ");
+ //           console.log("holdArray", holdArray[i]);
+          }
+          console.log("----------------------------------------------");
+ //         connection.end();
+      };
+
+    })
+}
 
 //                 if (validate(answer.idChoice)=== false) {
 //           // determine if there are enough units
