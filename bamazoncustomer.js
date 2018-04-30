@@ -56,16 +56,12 @@ var connection = mysql.createConnection({
         for (var i = 0; i < res.length; i++) {
             if (answer.product_name === "exit") {
                 bamazonExit();
-                // console.log("Thank you for shopping at Bamazon.  Goodbye.");
-                // connection.end();
-                // process.exit();
             }
             if (res[i].prodName === answer.product_name) {
                 idChoice = i+1;
                 userChoicePrice = res[i].price;
                 productChoice = res[i].prodName;
                 stockQtyChoice = res[i].stkQty;
-                // console.log("inside 1st .then", i, idChoice, userChoicePrice, productChoice, stockQtyChoice);
             }
         }
         prodQtyFn();
@@ -86,8 +82,6 @@ function prodQtyFn() {
           }, 
         ])
         .then(function(answer) {
-//            console.log("prodQtyFn.then answer.UserQty, then userQty", answer.userQty, userQty);
-
             if (parseInt(answer.userQty) > stockQtyChoice) {
                 console.log("Sorry, we don't have enough stock to complete your order.");
                 console.log(" ");
@@ -102,7 +96,6 @@ function prodQtyFn() {
                 updateDB();
             }
             saleAmount = userChoicePrice * parseInt(answer.userQty);
-            // console.log("SaleAmount ", saleAmount, userChoicePrice,  "answer.userQty ", answer.userQty );
 
     function updateDB() {
         console.log("stockQtyChoice", stockQtyChoice, "answer.userQty ", answer.userQty);
