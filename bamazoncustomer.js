@@ -21,16 +21,10 @@ var connection = mysql.createConnection({
 // function governAll() {  
   connection.connect(function(err) {
     if (err) throw err;
-    console.log("Hello Customer, how are you?  You are logged in today as ID# " + connection.threadId + "\n");
+    console.log("Hello Customer.  Welcome to Bamazon!  You are logged in today as ID# " + connection.threadId + "\n");
     console.log("Here is what we have for sale today:")
     readProducts();
-//    console.log("call buyChoice()");
-//    buyChoice();
-//    prodChoicefn();
-//    prodQtyFn();
-//    connection.end();
   });
-// };
   
 
 //print inventory table
@@ -50,7 +44,7 @@ var connection = mysql.createConnection({
         type: "list",
         message: "Which product would you like to buy? (Select 'exit' to end program.)",
         choices: function () {
-            let choiceArray = [];
+            var choiceArray = [];
             res.forEach(products => choiceArray.push(products.prodName));
             choiceArray[10] = "exit";
             return choiceArray;
@@ -58,23 +52,23 @@ var connection = mysql.createConnection({
         }
     ])
     .then(function(answer) {
-        prodQtyFn();
         // store values globally to accommodate inquirer
         for (var i = 0; i < res.length; i++) {
-//            console.log("res[i]", res[i]);
             if (answer.product_name === "exit") {
-                console.log("Thank you for shopping at Bamazon.  Goodbye.");
-                connection.end();
-                process.exit();
+                bamazonExit();
+                // console.log("Thank you for shopping at Bamazon.  Goodbye.");
+                // connection.end();
+                // process.exit();
             }
             if (res[i].prodName === answer.product_name) {
                 idChoice = i+1;
                 userChoicePrice = res[i].price;
                 productChoice = res[i].prodName;
                 stockQtyChoice = res[i].stkQty;
-                console.log("inside 1st .then", i, idChoice, userChoicePrice, productChoice, stockQtyChoice);
+                // console.log("inside 1st .then", i, idChoice, userChoicePrice, productChoice, stockQtyChoice);
             }
         }
+        prodQtyFn();
     });
  //         connection.end();
       };
@@ -88,19 +82,27 @@ function prodQtyFn() {
           {
             type: "input",
             name: "userQty",
-            message: "How many would you like to buy?"
+            message: "How many would you like to buy? (Enter zero or leave blank to exit.)"
           }, 
         ])
         .then(function(answer) {
-            console.log(answer, "in 2nd .then: answer.userQty", answer.userQty, "idChoice", idChoice, "userChoicePrice", userChoicePrice);
+//            console.log("prodQtyFn.then answer.UserQty, then userQty", answer.userQty, userQty);
+
             if (parseInt(answer.userQty) > stockQtyChoice) {
                 console.log("Sorry, we don't have enough stock to complete your order.");
+                console.log(" ");
+                console.log(" ");
+                console.log(" ");
+                readProducts();
                 return
             } else {
+                if (userQty <= 0) {
+                    bamazonExit();
+                };
                 updateDB();
             }
             saleAmount = userChoicePrice * parseInt(answer.userQty);
-            console.log("SaleAmount ", saleAmount, userChoicePrice,  "answer.userQty ", answer.userQty );
+            // console.log("SaleAmount ", saleAmount, userChoicePrice,  "answer.userQty ", answer.userQty );
 
     function updateDB() {
         console.log("stockQtyChoice", stockQtyChoice, "answer.userQty ", answer.userQty);
@@ -118,7 +120,10 @@ function prodQtyFn() {
               if (err) throw err;
             console.log("Order placed!");
           console.log("Total cost = " + answer.userQty + " units at $" + userChoicePrice + "= $" + saleAmount);
-//          console.log("Would you like to continue?");
+          console.log("Thank you for your business!")
+          console.log(" ");
+          console.log(" ");
+          console.log(" ");
           readProducts();
             }
           )};
@@ -126,12 +131,8 @@ function prodQtyFn() {
             }
           );
         };
- //   });
-
-
-// function buyChoice() {
-//     // fetch and display db data
-//     connection.query("SELECT * FROM products ORDER BY id", function (err, res) {
-//         if (err) throw err;
-//     });
-//   };
+function bamazonExit() {
+    console.log("Thank you for shopping at Bamazon.  Goodbye.");
+    connection.end();
+    process.exit();
+}
