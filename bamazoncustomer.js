@@ -2,15 +2,15 @@ var mysql = require("mysql");
 var inquirer = require("inquirer");
 // var bamazonCRUD = require("bamazonCRUD");
 
-var validInput = false;
-var globalProd =[];
-var product= [];
-var productChoice = [];
+//var validInput = false;
+//var globalProd =[];
+//var product= [];
+//var productChoice = [];
 var stockQtyChoice = 99;
-var stockChoiceQty = 199;
+// var stockChoiceQty = 199;
 var saleAmount= 0;
 var userChoicePrice = 0;
-var userQty = 1;
+var userQty = 5;
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -24,7 +24,7 @@ var connection = mysql.createConnection({
     database: "bamazon"
   });
 
-  
+// function governAll() {  
   connection.connect(function(err) {
     if (err) throw err;
     console.log("Hello Customer, how are you?  You are logged in today as ID# " + connection.threadId + "\n");
@@ -34,11 +34,13 @@ var connection = mysql.createConnection({
     buyChoice();
 //    prodChoicefn();
     prodQtyfn();
+//    connection.end();
   });
+// };
   
+
   // ebay-like code from exercises
   function readProducts() {
-    console.log("read products");
    connection.query("SELECT * FROM products", function(err, res) {
       if (err) {
           console.log("err", err);
@@ -132,7 +134,13 @@ function prodQtyfn() {
 //            return input <= productChoice.stkQty || "Sorry, we don't have that many in stock. Try again!";
         ])
         .then(function(answer) {
-            console.log("in 2nd .then: userQty", userQty, "idChoice", idChoice, "userChoicePrice", userChoicePrice);
+            console.log(answer, "in 2nd .then: userQty", userQty, "idChoice", idChoice, "userChoicePrice", userChoicePrice);
+            if (userQty > stockQtyChoice) {
+                console.log("Sorry, we don't have enough stock to complete your order.");
+                return
+            } else {
+                updateDB();
+            }
             saleAmount = userChoicePrice * userQty;
 //           var query = "UPDATE products SET stkQty= ?, WHERE id= ?";
 //           var values = 
@@ -142,24 +150,27 @@ function prodQtyfn() {
 //           ];
 //           console.log("saleAmount:", saleAmount, "query", query, "values", values);
 //           connection.query(query, values, function(err){
+    function updateDB() {
+        console.log("stockQtyChoice", stockQtyChoice, "UserQty ", userQty);
             connection.query(
                 "UPDATE products SET ? WHERE ?",
             [
               {
-                stkQty: (stockQtyChoice - answer.userQty)
+                stkQty: (stockQtyChoice - userQty)
               },
               {
                 id: idChoice
               }
             ],
-            function(error) {
-              if (error) throw err;
+            function(err) {
+              if (err) throw err;
             console.log("Order placed!");
           console.log("Total cost = " + userQty + " units at $" + userChoicePrice + "= $" + saleAmount);
-              console.log("That'll be $" + saleAmount + " please.");
-              buyChoice();
+          readProducts();
+    
+ //         governAll();
             }
-          );
+          )};
               
             }
           );
