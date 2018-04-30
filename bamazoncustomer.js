@@ -132,10 +132,10 @@ function prodQtyfn() {
 //            return input <= productChoice.stkQty || "Sorry, we don't have that many in stock. Try again!";
         ])
         .then(function(answer) {
-            console.log("in 2nd .then", idChoice, userChoicePrice);
-            saleAmount = userChoicePrice * answer.userQty;
+            console.log("in 2nd .then: userQty", userQty, "idChoice", idChoice, "userChoicePrice", userChoicePrice);
+            saleAmount = userChoicePrice * userQty;
 //           var query = "UPDATE products SET stkQty= ?, WHERE id= ?";
-//           var values = [
+//           var values = 
 //             stockQtyChoice,
 //  //           productChoice.product_sales + saleAmount,
 //             idChoice
@@ -155,7 +155,7 @@ function prodQtyfn() {
             function(error) {
               if (error) throw err;
             console.log("Order placed!");
-          console.log("Total cost = " + answer.userQty + " units at $" + userChoicePrice + " $" + saleAmount);
+          console.log("Total cost = " + userQty + " units at $" + userChoicePrice + "= $" + saleAmount);
               console.log("That'll be $" + saleAmount + " please.");
               buyChoice();
             }
