@@ -4,7 +4,7 @@ var inquirer = require("inquirer");
 var stockQtyChoice = 99;
 var saleAmount= 0;
 var userChoicePrice = 0;
-var userQty = 5;
+var userQty = 0;
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -48,11 +48,11 @@ var connection = mysql.createConnection({
         {
         name: "product_name",
         type: "list",
-        message: "Which product would you like to buy?",
+        message: "Which product would you like to buy? (Select 'exit' to end program.)",
         choices: function () {
             let choiceArray = [];
             res.forEach(products => choiceArray.push(products.prodName));
-            choiceArray[10] = "quit";
+            choiceArray[10] = "exit";
             return choiceArray;
             }
         }
@@ -62,7 +62,7 @@ var connection = mysql.createConnection({
         // store values globally to accommodate inquirer
         for (var i = 0; i < res.length; i++) {
 //            console.log("res[i]", res[i]);
-            if (answer.product_name === "quit") {
+            if (answer.product_name === "exit") {
                 console.log("Thank you for shopping at Bamazon.  Goodbye.");
                 connection.end();
                 process.exit();
@@ -92,22 +92,23 @@ function prodQtyFn() {
           }, 
         ])
         .then(function(answer) {
-            console.log(answer, "in 2nd .then: userQty", userQty, "idChoice", idChoice, "userChoicePrice", userChoicePrice);
-            if (userQty > stockQtyChoice) {
+            console.log(answer, "in 2nd .then: answer.userQty", answer.userQty, "idChoice", idChoice, "userChoicePrice", userChoicePrice);
+            if (parseInt(answer.userQty) > stockQtyChoice) {
                 console.log("Sorry, we don't have enough stock to complete your order.");
                 return
             } else {
                 updateDB();
             }
-            saleAmount = userChoicePrice * userQty;
+            saleAmount = userChoicePrice * parseInt(answer.userQty);
+            console.log("SaleAmount ", saleAmount, userChoicePrice,  "answer.userQty ", answer.userQty );
 
     function updateDB() {
-        console.log("stockQtyChoice", stockQtyChoice, "UserQty ", userQty);
+        console.log("stockQtyChoice", stockQtyChoice, "answer.userQty ", answer.userQty);
             connection.query(
                 "UPDATE products SET ? WHERE ?",
             [
               {
-                stkQty: (stockQtyChoice - userQty)
+                stkQty: (stockQtyChoice - parseInt(answer.userQty))
               },
               {
                 id: idChoice
@@ -116,14 +117,9 @@ function prodQtyFn() {
             function(err) {
               if (err) throw err;
             console.log("Order placed!");
-          console.log("Total cost = " + userQty + " units at $" + userChoicePrice + "= $" + saleAmount);
-          console.log("Would you like to continue?");
-          
-
+          console.log("Total cost = " + answer.userQty + " units at $" + userChoicePrice + "= $" + saleAmount);
+//          console.log("Would you like to continue?");
           readProducts();
-          
-    
- //         governAll();
             }
           )};
               
