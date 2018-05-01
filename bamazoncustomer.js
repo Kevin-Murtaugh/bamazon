@@ -78,6 +78,7 @@ function prodQtyFn() {
             message: "How many would you like to buy? (Enter zero or leave blank to exit.)"
         }, ])
         .then(function (answer) {
+            console.log("userQty ", userQty)
                 if (parseInt(answer.userQty) > stockQtyChoice) {
                     console.log("Sorry, we don't have enough stock to complete your order.");
                     console.log(" ");
@@ -95,10 +96,10 @@ function prodQtyFn() {
                     saleAmount = userChoicePrice * parseInt(answer.userQty);
         });
                     function updateDB() {
-                        console.log("stockQtyChoice", stockQtyChoice, "answer.userQty ", answer.userQty);
+                        console.log("stockQtyChoice", stockQtyChoice, "answer.userQty ", userQty);
                         connection.query(
                             "UPDATE products SET ? WHERE ?", [{
-                                    stkQty: (stockQtyChoice - parseInt(answer.userQty))
+                                    stkQty: (stockQtyChoice - parseInt(userQty))
                                 },
                                 {
                                     id: idChoice
@@ -106,13 +107,14 @@ function prodQtyFn() {
                             ],
                             function (err) {
                                 if (err) throw err;
-                                console.log("Order placed!");
-                                console.log("Total cost = " + answer.userQty + " units at $" + userChoicePrice + "= $" + saleAmount);
-                                console.log("Thank you for your business!")
-                                console.log(" ");
-                                console.log(" ");
-                                console.log(" ");
-                                readProducts();
+                            }
+                            console.log("Order placed!");
+                            console.log("Total cost = " + answer.userQty + " units at $" + userChoicePrice + "= $" + saleAmount);
+                            console.log("Thank you for your business!")
+                            console.log(" ");
+                            console.log(" ");
+                            console.log(" ");
+                            readProducts();
                             }
                         )};
             }
