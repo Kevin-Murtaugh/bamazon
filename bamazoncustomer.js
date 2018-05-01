@@ -107,17 +107,17 @@ function prodQtyFn() {
                             ],
                             function (err) {
                                 if (err) throw err;
-                            }
+                            })
                             console.log("Order placed!");
                             console.log("Total cost = " + answer.userQty + " units at $" + userChoicePrice + "= $" + saleAmount);
-                            console.log("Thank you for your business!")
+                            console.log("Thank you for your business!");
                             console.log(" ");
                             console.log(" ");
                             console.log(" ");
                             readProducts();
                             }
-                        )};
-            }
+                        };
+
                 function bamazonExit() {
                     console.log("Thank you for shopping at Bamazon.  Goodbye.");
                     connection.end();
