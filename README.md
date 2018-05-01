@@ -13,7 +13,7 @@ data validation was left until the end. While this code 100% meets the stated
 requirements, there is still room for improvement. A prime area for this
 improvement would require multiple additional inquirer.prompts and promises.
 Given a more leisurely deadline (or maybe after the bootcamp is over), these can
-be constructed and applied.
+be constructed and applied to improve the professionalism of the solution.
 
 The mySQL portion of this exercise was the highlight for me as I feel my
 background in engineering, mathematics and statistics –on top of this bootcamp
